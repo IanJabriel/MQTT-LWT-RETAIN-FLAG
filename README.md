@@ -145,6 +145,41 @@ Retain é ideal para representar **estado atual** de um dispositivo ou sensor: t
 
 ---
 
+## Impactos e quando usar cada um
+
+### Impactos do LWT
+
+- **Confiabilidade:** permite que o sistema reaja a falhas de dispositivos em segundos, sem polling manual.
+- **Observabilidade:** dashboards e alertas conseguem distinguir "sensor silencioso" de "sensor morto", reduzindo falsos negativos.
+- **Custo de rede:** impacto mínimo — o LWT só trafega quando há queda real; o keepalive adiciona pacotes PING leves.
+- **Latência de detecção:** depende do `keepalive`. Valor baixo detecta rápido mas gera mais tráfego; valor alto economiza banda mas atrasa o alerta.
+- **Risco:** se mal configurado (tópico errado, sem retain), o aviso de queda pode passar despercebido por subscribers que conectarem depois.
+
+### Impactos do Retain Flag
+
+- **Experiência do usuário:** dashboards e apps mostram o estado atual imediatamente ao conectar, sem telas em branco.
+- **Memória do broker:** cada tópico com retain consome memória persistente. Em sistemas com milhares de tópicos, o impacto pode ser relevante.
+- **Risco de dado obsoleto:** o subscriber pode tratar uma leitura antiga como atual se ignorar `msg.retain`. Sempre verifique o flag e/ou inclua timestamp no payload.
+- **Risco em comandos:** atuadores que reconectam podem reexecutar o último comando retido. Não use retain em tópicos de comando sem mecanismo de idempotência.
+- **Reinicialização:** mensagens retidas sobrevivem a reinícios do broker (se persistência estiver habilitada), garantindo continuidade do estado.
+
+### Quando usar cada um
+
+| Situação | Use LWT | Use Retain | Use os dois |
+|---|---|---|---|
+| Detectar queda de dispositivo | ✅ | | |
+| Mostrar estado atual em dashboard recém-aberto | | ✅ | |
+| Status online/offline persistente para novos subscribers | | | ✅ |
+| Última leitura de sensor (temperatura, umidade) | | ✅ | |
+| Eventos pontuais (botão pressionado, alarme disparado) | | ❌ | |
+| Logs ou histórico de medições | ❌ | ❌ | |
+| Comandos para atuadores | | ⚠️ cuidado | |
+| Sistema crítico de monitoramento IoT em produção | | | ✅ |
+
+**Regra prática:** use **LWT** quando precisar saber que algo *parou de funcionar*; use **Retain** quando precisar entregar o *estado atual* a quem chegar depois; **combine os dois** sempre que o status do dispositivo precisar sobreviver tanto a quedas quanto a novas conexões de subscribers.
+
+---
+
 ## Como executar
 
 ### Pré-requisitos
