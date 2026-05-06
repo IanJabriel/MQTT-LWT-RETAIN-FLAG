@@ -4,6 +4,17 @@ Dois recursos avançados do MQTT que resolvem problemas reais em sistemas IoT: s
 
 ---
 
+## Integrantes do Grupo
+
+| Nome | RA |
+|---|---|
+| Ian Jabriel | 1962004 |
+| João Vitor | 1963129 |
+| Gabriel Verri | 1978701 |
+| Gabriel Lenzi | 1960578 |
+
+---
+
 ## Estrutura
 
 ```
